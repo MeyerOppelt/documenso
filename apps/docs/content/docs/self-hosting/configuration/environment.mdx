@@ -157,6 +157,12 @@ Documenso supports multiple email transports for sending notifications.
 | `NEXT_PRIVATE_SMTP_FROM_ADDRESS` | Sender email address (required) |
 | `NEXT_PRIVATE_SMTP_FROM_NAME`    | Sender display name (required)  |
 
+### Completed Document Attachments
+
+| Variable                                | Description                                                                                                                                       | Default |
+| --------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- | ------- |
+| `NEXT_PRIVATE_EMAIL_MAX_ATTACHMENT_SIZE` | Max size in bytes of a completion email, counting the base64-encoded documents, both rendered bodies and MIME overhead. `0` never attaches the documents. Over the cap, a download link is sent instead. Unset falls back to the transport's own default: `0` for MailChannels, 40 MB for Resend, no cap for either SMTP transport. | -       |
+
 For detailed email setup, see [Email Configuration](/docs/self-hosting/configuration/email).
 
 ---

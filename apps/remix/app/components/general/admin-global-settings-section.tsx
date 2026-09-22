@@ -15,6 +15,7 @@ const EMAIL_SETTINGS_LABELS: Record<keyof TDocumentEmailSettings, MessageDescrip
   recipientSigned: msg`Recipient signed`,
   documentPending: msg`Document pending`,
   documentCompleted: msg`Document completed`,
+  attachCompletedDocument: msg`Attach completed document`,
   documentDeleted: msg`Document deleted`,
   ownerDocumentCompleted: msg`Owner document completed`,
   ownerRecipientExpired: msg`Owner recipient expired`,

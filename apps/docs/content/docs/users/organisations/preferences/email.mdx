@@ -25,6 +25,21 @@ To access the preferences, navigate to either the organisation or teams settings
 | **Reply to email**         | Email address used in the "Reply To" field in outgoing emails. Leave blank to inherit from the organisation. |
 | **Default Email Settings** | Controls which emails are sent to recipients during document signing (e.g. signing invitations, completion notifications). Teams can inherit from the organisation or override with custom settings. |
 
+### Completed Document Attachment
+
+The **Attach the completed document to completion emails** setting controls whether the signed PDF is attached to the "Signing Complete!" emails. It is enabled by default and can be overridden per document.
+
+When it is disabled, the completion emails contain a download link instead of the attachment. Recipients open the link with their signing token and the owner opens it from the documents page, so the signed document remains available to everyone who was emailed.
+
+Disable it when your documents exceed your email provider's attachment size limit, or when executed documents may not be sent over email at all.
+
+Leaving it enabled is safe for oversized documents. When a completion email would be too large for the email provider to accept, the attachment is dropped and the email says the document was too large to attach, rather than the send failing for everyone. The decision is made once per document, so the owner and every recipient receive the same thing.
+
+<Callout>
+  Self-hosted instances can also cap or disable the attachment for the whole deployment, and some
+  transports cap it by default. See [Email Configuration](/docs/self-hosting/configuration/email).
+</Callout>
+
 ## See Also
 
 - [Email Domains](/docs/users/organisations/email-domains) - Send emails from your own domain

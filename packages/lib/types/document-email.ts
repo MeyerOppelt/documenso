@@ -8,6 +8,14 @@ export enum DocumentEmailEvents {
   RecipientSigned = 'recipientSigned',
   DocumentPending = 'documentPending',
   DocumentCompleted = 'documentCompleted',
+  /**
+   * Not an email event — there is no email called `attachCompletedDocument`. This is an
+   * option that modifies the document completed emails rather than suppressing them. It
+   * lives on this enum because the enum is what drives the checkbox `id`/`htmlFor` pairs
+   * and the `hiddenEvents` machinery in `document-email-checkboxes.tsx`, and a parallel
+   * mechanism for a single key is not worth the duplication.
+   */
+  AttachCompletedDocument = 'attachCompletedDocument',
   DocumentDeleted = 'documentDeleted',
   OwnerDocumentCompleted = 'ownerDocumentCompleted',
   OwnerRecipientExpired = 'ownerRecipientExpired',
@@ -37,6 +45,12 @@ export const ZDocumentEmailSettingsSchema = z
     documentCompleted: z
       .boolean()
       .describe('Whether to send an email to all recipients when the document is complete.')
+      .default(true),
+    attachCompletedDocument: z
+      .boolean()
+      .describe(
+        'Whether to attach the completed document to the document completed emails. When disabled, the emails contain a download link instead of the PDF attachment.',
+      )
       .default(true),
     documentDeleted: z
       .boolean()
@@ -74,6 +88,9 @@ export const extractDerivedDocumentEmailSettings = (documentMeta?: DocumentMeta 
     documentPending: false,
     documentCompleted: false,
     documentDeleted: false,
+    // The owner completion email still sends under a non-email distribution method, so the
+    // attachment preference is still meaningful here and must be preserved rather than forced.
+    attachCompletedDocument: emailSettings.attachCompletedDocument,
     ownerDocumentCompleted: emailSettings.ownerDocumentCompleted,
     ownerRecipientExpired: emailSettings.ownerRecipientExpired,
     ownerDocumentCreated: emailSettings.ownerDocumentCreated,
@@ -86,6 +103,7 @@ export const DEFAULT_DOCUMENT_EMAIL_SETTINGS: TDocumentEmailSettings = {
   recipientSigned: true,
   documentPending: true,
   documentCompleted: true,
+  attachCompletedDocument: true,
   documentDeleted: true,
   ownerDocumentCompleted: true,
   ownerRecipientExpired: true,

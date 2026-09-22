@@ -1,9 +1,34 @@
+import type { TEmailTransportConfig } from '@documenso/lib/server-only/email/email-transport-config';
 import { env } from '@documenso/lib/utils/env';
 import { ResendTransport } from '@documenso/nodemailer-resend';
 import type { Transporter } from 'nodemailer';
 import { createTransport } from 'nodemailer';
 
 import { MailChannelsTransport } from './transports/mailchannels';
+
+/**
+ * `NEXT_PRIVATE_SMTP_TRANSPORT` values, normalised onto the same union the
+ * per-organisation `EmailTransport` rows use.
+ */
+const ENV_TRANSPORT_TYPES: Record<string, TEmailTransportConfig['type']> = {
+  mailchannels: 'MAILCHANNELS',
+  resend: 'RESEND',
+  'smtp-api': 'SMTP_API',
+  'smtp-auth': 'SMTP_AUTH',
+};
+
+/**
+ * The kind of transport `NEXT_PRIVATE_SMTP_TRANSPORT` selects. Anything unrecognised falls
+ * through to `SMTP_AUTH`, matching the mailer's own default below.
+ */
+const getEnvTransportType = (): TEmailTransportConfig['type'] =>
+  ENV_TRANSPORT_TYPES[env('NEXT_PRIVATE_SMTP_TRANSPORT') ?? 'smtp-auth'] ?? 'SMTP_AUTH';
+
+/**
+ * The transport kind the env-level `mailer` below is built from. Needed alongside the
+ * `Transporter` itself, which carries no discriminator of its own.
+ */
+export const mailerTransportType = getEnvTransportType();
 
 /**
  * Creates a Nodemailer transport object for sending emails.
@@ -51,9 +76,9 @@ import { MailChannelsTransport } from './transports/mailchannels';
  * - `NEXT_PRIVATE_SMTP_SERVICE` is optional and used specifically for well-known services like Gmail.
  */
 const getTransport = (): Transporter => {
-  const transport = env('NEXT_PRIVATE_SMTP_TRANSPORT') ?? 'smtp-auth';
+  const transport = mailerTransportType;
 
-  if (transport === 'mailchannels') {
+  if (transport === 'MAILCHANNELS') {
     return createTransport(
       MailChannelsTransport.makeTransport({
         apiKey: env('NEXT_PRIVATE_MAILCHANNELS_API_KEY'),
@@ -62,7 +87,7 @@ const getTransport = (): Transporter => {
     );
   }
 
-  if (transport === 'resend') {
+  if (transport === 'RESEND') {
     if (!env('NEXT_PRIVATE_RESEND_API_KEY')) {
       throw new Error('Resend transport requires NEXT_PRIVATE_RESEND_API_KEY');
     }
@@ -74,7 +99,7 @@ const getTransport = (): Transporter => {
     );
   }
 
-  if (transport === 'smtp-api') {
+  if (transport === 'SMTP_API') {
     if (!env('NEXT_PRIVATE_SMTP_HOST') || !env('NEXT_PRIVATE_SMTP_APIKEY')) {
       throw new Error('SMTP API transport requires NEXT_PRIVATE_SMTP_HOST and NEXT_PRIVATE_SMTP_APIKEY');
     }

@@ -18,6 +18,7 @@ export const DocumentCompletedEmailTemplate = ({
   assetBaseUrl = 'http://localhost:3002',
   customBody,
   reportUrl,
+  wasAttachmentDropped,
 }: DocumentCompletedEmailTemplateProps) => {
   const { _ } = useLingui();
 
@@ -39,6 +40,7 @@ export const DocumentCompletedEmailTemplate = ({
                 documentName={documentName}
                 assetBaseUrl={assetBaseUrl}
                 customBody={customBody}
+                wasAttachmentDropped={wasAttachmentDropped}
               />
             </Section>
           </Container>

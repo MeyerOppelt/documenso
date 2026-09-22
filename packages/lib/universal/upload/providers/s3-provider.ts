@@ -1,5 +1,11 @@
 import path from 'node:path';
-import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from '@aws-sdk/client-s3';
+import {
+  DeleteObjectCommand,
+  GetObjectCommand,
+  HeadObjectCommand,
+  PutObjectCommand,
+  S3Client,
+} from '@aws-sdk/client-s3';
 import { env } from '@documenso/lib/utils/env';
 import slugify from '@sindresorhus/slugify';
 
@@ -96,6 +102,23 @@ export class S3Provider implements StorageProvider {
 
     const url = await getSignedUrl(this.client, command, { expiresIn: ONE_HOUR / ONE_SECOND });
     return { key, url };
+  }
+
+  async getFileSize(key: string): Promise<number> {
+    const response = await this.client.send(
+      new HeadObjectCommand({
+        Bucket: env('NEXT_PRIVATE_UPLOAD_BUCKET'),
+        Key: key,
+      }),
+    );
+
+    // Some S3-compatible endpoints omit ContentLength on HEAD. Treating a missing value
+    // as zero would report every such object as free, so surface it as a failure instead.
+    if (typeof response.ContentLength !== 'number') {
+      throw new Error(`Failed to get the size of file "${key}", the response carried no ContentLength`);
+    }
+
+    return response.ContentLength;
   }
 
   async uploadFile(input: UploadFileInput): Promise<UploadFileResult> {

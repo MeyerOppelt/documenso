@@ -1,4 +1,4 @@
-import { mailer } from '@documenso/email/mailer';
+import { mailer, mailerTransportType } from '@documenso/email/mailer';
 import type { BrandingSettings } from '@documenso/email/providers/branding';
 import { prisma } from '@documenso/prisma';
 import type {
@@ -21,6 +21,7 @@ import {
   teamGlobalSettingsToBranding,
 } from '../../utils/team-global-settings-to-branding';
 import { extractDerivedTeamSettings } from '../../utils/teams';
+import type { TEmailTransportConfig } from './email-transport-config';
 import { resolveEmailTransport } from './resolve-email-transport';
 
 type EmailMetaOption = Partial<Pick<DocumentMeta, 'emailId' | 'emailReplyTo' | 'language'>>;
@@ -80,6 +81,14 @@ export type EmailContextResponse = {
   organisationId: string;
   organisationType: OrganisationType;
   emailTransport: Transporter;
+  /**
+   * The kind of transport `emailTransport` is, which the built `Transporter` itself does
+   * not carry. Callers need it to resolve transport-specific limits such as the max
+   * completion email size.
+   *
+   * Transport is resolved per organisation, so this varies per send.
+   */
+  emailTransportType: TEmailTransportConfig['type'];
   senderEmail: {
     name: string;
     address: string;
@@ -91,7 +100,10 @@ export type EmailContextResponse = {
 export const getEmailContext = async (options: GetEmailContextOptions): Promise<EmailContextResponse> => {
   const { source, meta } = options;
 
-  let emailContext: Omit<EmailContextResponse, 'senderEmail' | 'replyToEmail' | 'emailLanguage' | 'emailTransport'>;
+  let emailContext: Omit<
+    EmailContextResponse,
+    'senderEmail' | 'replyToEmail' | 'emailLanguage' | 'emailTransport' | 'emailTransportType'
+  >;
 
   if (source.type === 'organisation') {
     emailContext = await handleOrganisationEmailContext(source.organisationId);
@@ -121,11 +133,13 @@ export const getEmailContext = async (options: GetEmailContextOptions): Promise<
         name: transportResolution.row.fromName,
         address: transportResolution.row.fromAddress,
         transport: transportResolution.transporter,
+        transportType: transportResolution.row.type,
       }
     : {
         name: DOCUMENSO_INTERNAL_EMAIL.name,
         address: DOCUMENSO_INTERNAL_EMAIL.address,
         transport: mailer,
+        transportType: mailerTransportType,
       };
 
   // Immediate return for internal emails.
@@ -133,6 +147,7 @@ export const getEmailContext = async (options: GetEmailContextOptions): Promise<
     return {
       ...emailContext,
       emailTransport: resolvedTransportData.transport,
+      emailTransportType: resolvedTransportData.transportType,
       senderEmail: {
         name: resolvedTransportData.name,
         address: resolvedTransportData.address,
@@ -163,6 +178,7 @@ export const getEmailContext = async (options: GetEmailContextOptions): Promise<
     return {
       ...emailContext,
       emailTransport: mailer,
+      emailTransportType: mailerTransportType,
       senderEmail: {
         name: foundSenderEmail.emailName,
         address: foundSenderEmail.email,
@@ -176,6 +192,7 @@ export const getEmailContext = async (options: GetEmailContextOptions): Promise<
   return {
     ...emailContext,
     emailTransport: resolvedTransportData.transport,
+    emailTransportType: resolvedTransportData.transportType,
     senderEmail: {
       name: resolvedTransportData.name,
       address: resolvedTransportData.address,

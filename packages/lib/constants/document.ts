@@ -14,6 +14,14 @@ export { DocumentSignatureType };
  */
 export const STATS_COUNT_CAP = 10_000;
 
+/**
+ * Max length of an envelope/document title, enforced by `ZDocumentTitleSchema`.
+ *
+ * Lives here rather than beside the schema so that non-tRPC callers — notably the
+ * completion email size probe — can bound a title without importing the router package.
+ */
+export const DOCUMENT_TITLE_MAX_LENGTH = 255;
+
 export const DOCUMENT_STATUS: {
   [status in DocumentStatus]: { description: MessageDescriptor };
 } = {

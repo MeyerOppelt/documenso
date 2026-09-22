@@ -1,7 +1,8 @@
+import { DOCUMENT_TITLE_MAX_LENGTH } from '@documenso/lib/constants/document';
 import { DocumentVisibility } from '@prisma/client';
 import { z } from 'zod';
 
-export const DOCUMENT_TITLE_MAX_LENGTH = 255;
+export { DOCUMENT_TITLE_MAX_LENGTH };
 
 export const ZDocumentTitleSchema = z
   .string()

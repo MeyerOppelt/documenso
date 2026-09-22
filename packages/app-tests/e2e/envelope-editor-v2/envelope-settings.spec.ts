@@ -60,6 +60,7 @@ const DB_EXPECTED_VALUES = {
     recipientRemoved: false,
     documentPending: false,
     documentCompleted: false,
+    attachCompletedDocument: false,
     documentDeleted: false,
     ownerDocumentCompleted: false,
     ownerRecipientExpired: false,
@@ -128,6 +129,7 @@ const runSettingsFlow = async ({ root }: TEnvelopeEditorSurface, { externalId, i
   await root.locator('#documentPending').click();
   await root.locator('#documentCompleted').click();
   await root.locator('#documentDeleted').click();
+  await root.locator('#attachCompletedDocument').click();
 
   await root.getByRole('button', { name: 'General' }).click();
 
@@ -221,6 +223,10 @@ const runSettingsFlow = async ({ root }: TEnvelopeEditorSurface, { externalId, i
   await expect(root.locator('#documentDeleted')).toHaveCount(0);
   await expect(root.getByText(/Email distribution needs to be enabled/)).toBeVisible();
 
+  // The owner completion email still sends under a non-email distribution method, so the
+  // attachment toggle stays editable rather than being hidden with the recipient events.
+  await expect(root.locator('#attachCompletedDocument')).toBeEnabled();
+
   // Email Sender select only renders when the org has the emailDomains feature
   // flag plus allowConfigureEmailSender, so the assertion is conditional.
   const emailSenderSelect = getComboboxByLabel(root, 'Email Sender');
@@ -309,6 +315,7 @@ const runSettingsFlow = async ({ root }: TEnvelopeEditorSurface, { externalId, i
   await expect(root.locator('#ownerDocumentCompleted')).toHaveAttribute('aria-checked', 'false');
   await expect(root.locator('#ownerRecipientExpired')).toHaveAttribute('aria-checked', 'false');
   await expect(root.locator('#ownerDocumentCreated')).toHaveAttribute('aria-checked', 'false');
+  await expect(root.locator('#attachCompletedDocument')).toHaveAttribute('aria-checked', 'false');
   await expect(root.locator('input[name="meta.emailReplyTo"]')).toHaveValue(TEST_SETTINGS_VALUES.replyTo);
   await expect(root.locator('input[name="meta.subject"]')).toHaveValue(TEST_SETTINGS_VALUES.subject);
   await expect(root.locator('textarea[name="meta.message"]')).toHaveValue(TEST_SETTINGS_VALUES.message);

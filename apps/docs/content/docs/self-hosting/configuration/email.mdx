@@ -39,6 +39,52 @@ NEXT_PRIVATE_SMTP_FROM_NAME="Documenso"
   address will cause delivery failures.
 </Callout>
 
+## Completed Document Attachments
+
+When a document is completed, Documenso attaches the signed PDF to the "Signing Complete!" email sent to the owner and to each recipient. Email providers cap the total message size, and attachments are base64-encoded over the wire, which inflates them by roughly 37%. If the message exceeds your provider's limit, the provider rejects the send and nobody receives a completion email.
+
+Use `NEXT_PRIVATE_EMAIL_MAX_ATTACHMENT_SIZE` to drop the attachment instead. The completion email always contains a download link, so dropping the attachment still lets everyone retrieve the signed document, and the email says the document was too large to attach.
+
+The value is compared against the whole rendered message — the base64-encoded documents, both the HTML and plain text bodies, and an 8 KB allowance for MIME headers and boundaries — so it is directly comparable to the message size limit your provider publishes.
+
+| Value           | Behaviour                                                                                   |
+| --------------- | ------------------------------------------------------------------------------------------- |
+| Unset (default) | The transport's own default applies. See the table below.                                   |
+| `0`             | Never attach. Every completion email is sent with a download link only.                     |
+| `n` (positive)  | Attach while the rendered message is at most `n` bytes, otherwise send the link only.       |
+
+```bash
+# Oracle Cloud Infrastructure Email Delivery caps messages at 2 MB.
+NEXT_PRIVATE_EMAIL_MAX_ATTACHMENT_SIZE=2000000
+```
+
+### Transport Defaults
+
+With the variable unset, the limit comes from the transport you are sending over:
+
+| Transport      | Default   | Why                                                                                          |
+| -------------- | --------- | ---------------------------------------------------------------------------------------------- |
+| `mailchannels` | `0`       | The MailChannels API carries no attachments, so fetching the documents for it is pure waste. |
+| `resend`       | 40 MB     | Resend's documented message size limit, attachments included.                                |
+| `smtp-api`     | No cap    | The limit belongs to your server and cannot be guessed from here. Set the variable.          |
+| `smtp-auth`    | No cap    | The same.                                                                                    |
+
+An explicitly set value wins for every transport, including MailChannels.
+
+<Callout>
+  Setting `0` overrides the per-document **Attach the completed document to completion emails**
+  preference. An instance whose transport cannot carry PDFs should not be overridable per document.
+  This is the only case where the document-level preference is ignored.
+</Callout>
+
+<Callout type="warn">
+  When a numeric limit is in effect, Documenso reads each document's size from object storage before
+  downloading it. If that size cannot be read — a missing object, a transient storage error, or an
+  S3-compatible endpoint that does not return a content length — the size is unknown and the email is
+  sent with a download link only. If attachments stop appearing after you set this variable, check the
+  job logs for a size probe warning before looking anywhere else.
+</Callout>
+
 ## SMTP Configuration
 
 SMTP is the most common email transport. Documenso supports two SMTP authentication methods.

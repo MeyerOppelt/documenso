@@ -12,6 +12,10 @@ export const getPresignGetUrl = async (key: string) => {
   return getStorageProvider().getPresignGetUrl(key);
 };
 
+export const getFileSize = async (key: string) => {
+  return getStorageProvider().getFileSize(key);
+};
+
 /**
  * Uploads a file server-side. Name preserved for backward compatibility with
  * existing callers; underneath it delegates to the active storage provider.

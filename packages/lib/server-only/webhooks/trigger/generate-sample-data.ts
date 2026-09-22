@@ -442,6 +442,7 @@ export const generateSampleWebhookPayload = (event: WebhookTriggerEvents, webhoo
             recipientSigned: true,
             recipientRemoved: true,
             documentCompleted: true,
+            attachCompletedDocument: true,
             ownerDocumentCompleted: true,
             ownerRecipientExpired: true,
             ownerDocumentCreated: true,

@@ -33,6 +33,14 @@ export interface StorageProvider {
   getPresignGetUrl(key: string): Promise<PresignedUrl>;
 
   /**
+   * Size in bytes of a stored file, read from the backend's object metadata without
+   * transferring the object itself.
+   *
+   * Throws when the object is missing or the backend does not report a size.
+   */
+  getFileSize(key: string): Promise<number>;
+
+  /**
    * Server-side upload of a file's bytes. Returns the chosen key.
    */
   uploadFile(input: UploadFileInput): Promise<UploadFileResult>;

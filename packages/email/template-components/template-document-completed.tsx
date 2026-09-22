@@ -9,6 +9,14 @@ export interface TemplateDocumentCompletedProps {
   documentName: string;
   assetBaseUrl: string;
   customBody?: string;
+  /**
+   * Whether the completed document was dropped from this email because the rendered
+   * message would have exceeded the transport's size limit.
+   *
+   * Deliberately not set when the sender turned the attachment off, or when the effective
+   * cap is `0` — nothing was dropped in either case, so saying so would be untrue.
+   */
+  wasAttachmentDropped?: boolean;
 }
 
 export const TemplateDocumentCompleted = ({
@@ -16,6 +24,7 @@ export const TemplateDocumentCompleted = ({
   documentName,
   assetBaseUrl,
   customBody,
+  wasAttachmentDropped,
 }: TemplateDocumentCompletedProps) => {
   return (
     <>
@@ -42,6 +51,12 @@ export const TemplateDocumentCompleted = ({
         <Text className="my-1 text-center text-base text-muted-foreground">
           <Trans>Continue by downloading the document.</Trans>
         </Text>
+
+        {wasAttachmentDropped && (
+          <Text className="my-1 text-center text-muted-foreground text-sm">
+            <Trans>This document was too large to attach. Use the download link below to retrieve it.</Trans>
+          </Text>
+        )}
 
         <Section className="mt-8 mb-6 text-center">
           <Button

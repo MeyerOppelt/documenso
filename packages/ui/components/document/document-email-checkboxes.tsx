@@ -214,6 +214,47 @@ export const DocumentEmailCheckboxes = ({ value, onChange, className, hiddenEven
         </div>
       )}
 
+      {!isHidden(DocumentEmailEvents.AttachCompletedDocument) && (
+        <div className="flex flex-row items-center">
+          <Checkbox
+            id={DocumentEmailEvents.AttachCompletedDocument}
+            className="h-5 w-5"
+            checked={value.attachCompletedDocument}
+            onCheckedChange={(checked) =>
+              onChange({ ...value, [DocumentEmailEvents.AttachCompletedDocument]: Boolean(checked) })
+            }
+          />
+
+          <label
+            className="ml-2 flex flex-row items-center text-muted-foreground text-sm"
+            htmlFor={DocumentEmailEvents.AttachCompletedDocument}
+          >
+            <Trans>Attach the completed document to completion emails</Trans>
+
+            <Tooltip>
+              <TooltipTrigger>
+                <InfoIcon className="mx-2 h-4 w-4" />
+              </TooltipTrigger>
+
+              <TooltipContent className="max-w-md space-y-2 p-4 text-foreground">
+                <h2>
+                  <strong>
+                    <Trans>Completed document attachment</Trans>
+                  </strong>
+                </h2>
+
+                <p>
+                  <Trans>
+                    When disabled, completion emails contain a download link instead of the PDF attachment. Useful when
+                    documents exceed your email provider's attachment size limit.
+                  </Trans>
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </label>
+        </div>
+      )}
+
       {!isHidden(DocumentEmailEvents.DocumentDeleted) && (
         <div className="flex flex-row items-center">
           <Checkbox

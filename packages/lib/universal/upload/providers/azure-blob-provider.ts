@@ -77,6 +77,17 @@ export class AzureBlobProvider implements StorageProvider {
     return { key, url };
   }
 
+  async getFileSize(key: string): Promise<number> {
+    const containerClient = this.serviceClient.getContainerClient(this.containerName);
+    const properties = await containerClient.getBlockBlobClient(key).getProperties();
+
+    if (typeof properties.contentLength !== 'number') {
+      throw new Error(`Failed to get the size of file "${key}", the response carried no contentLength`);
+    }
+
+    return properties.contentLength;
+  }
+
   async uploadFile(input: UploadFileInput): Promise<UploadFileResult> {
     const { name, ext } = path.parse(input.name);
     const key = `${alphaid(12)}/${slugify(name)}${ext}`;

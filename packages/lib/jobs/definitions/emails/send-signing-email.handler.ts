@@ -78,6 +78,12 @@ export const run = async ({ payload, io }: { payload: TSendSigningEmailJobDefini
   const { documentMeta, team } = envelope;
 
   if (recipient.role === RecipientRole.CC) {
+    io.logger.warn({
+      msg: 'Signing request email skipped: recipient is a CC, who is never asked to sign',
+      envelopeId: envelope.id,
+      recipientId: recipient.id,
+    });
+
     return;
   }
 
@@ -86,6 +92,13 @@ export const run = async ({ payload, io }: { payload: TSendSigningEmailJobDefini
   ).recipientSigningRequest;
 
   if (!isRecipientSigningRequestEmailEnabled) {
+    io.logger.warn({
+      msg: 'Signing request email skipped: the recipientSigningRequest email setting is off. Note that any distribution method other than EMAIL forces it off.',
+      envelopeId: envelope.id,
+      recipientId: recipient.id,
+      distributionMethod: envelope.documentMeta?.distributionMethod,
+    });
+
     return;
   }
 
@@ -111,6 +124,15 @@ export const run = async ({ payload, io }: { payload: TSendSigningEmailJobDefini
 
   // Don't send signing invitations if the organisation has email sending disabled or the owner is disabled (e.g. banned).
   if (envelope.user.disabled || emailsDisabled) {
+    io.logger.warn({
+      msg: 'Signing request email skipped: the envelope owner is disabled, or the organisation has email sending disabled',
+      envelopeId: envelope.id,
+      recipientId: recipient.id,
+      organisationId,
+      isOwnerDisabled: envelope.user.disabled,
+      emailsDisabled,
+    });
+
     return;
   }
 
@@ -184,6 +206,14 @@ export const run = async ({ payload, io }: { payload: TSendSigningEmailJobDefini
     includeSenderDetails: settings.includeSenderDetails,
     reportUrl,
   });
+
+  if (!isRecipientEmailValidForSending(recipient)) {
+    io.logger.warn({
+      msg: 'Signing request email skipped: the recipient address is not valid for sending',
+      envelopeId: envelope.id,
+      recipientId: recipient.id,
+    });
+  }
 
   if (isRecipientEmailValidForSending(recipient)) {
     try {
